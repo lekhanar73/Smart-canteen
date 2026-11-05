@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Canteen — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card animate-fade">
+      <div class="login-logo">🍽️</div>
+      <h1 class="login-title">Smart Canteen</h1>
+      <p class="login-subtitle">Order ahead, skip the queue</p>
+
+      <div id="loginError" class="login-error"></div>
+
+      <form id="loginForm" autocomplete="off">
+        <!-- Role Toggle -->
+        <div class="role-toggle">
+          <input type="radio" name="role" id="roleStudent" value="student" checked>
+          <label for="roleStudent">🎓 Student</label>
+          <input type="radio" name="role" id="roleAdmin" value="admin">
+          <label for="roleAdmin">⚙️ Admin</label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginId">Email / Username</label>
+          <input type="text" id="loginId" class="form-control" placeholder="Enter your email or username" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPass">Password</label>
+          <input type="password" id="loginPass" class="form-control" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
+      </form>
+<div style="text-align:center; margin:20px 0;">
+    <p>Don't have an account?</p>
+    <button type="button" onclick="showRegister()">
+        Create Account / Register
+    </button>
+</div>
+
+<div id="registerSection" style="display:none;">
+    <h3>Student Registration</h3>
+
+    <form id="registerForm">
+        <p>
+            <label>Full Name</label>
+            <input type="text" id="regName"
+                   placeholder="Enter your name" required>
+        </p>
+
+        <p>
+            <label>Email</label>
+            <input type="email" id="regEmail"
+                   placeholder="Enter your email" required>
+        </p>
+
+        <p>
+            <label>Password</label>
+            <input type="password" id="regPassword"
+                   placeholder="Create a password"
+                   minlength="6" required>
+        </p>
+
+        <button type="submit">Register</button>
+        <p id="registerMessage"></p>
+    </form>
+</div>
+      <div class="login-demo-info">
+        <h4>🔑 Demo Credentials</h4>
+        <p><strong>Student:</strong> <code>ananya.rao@example.edu</code> / <code>student123</code></p>
+        <p><strong>Admin:</strong> <code>admin</code> / <code>admin123</code></p>
+        <p style="margin-top:8px;font-style:italic;color:var(--text-light);">These are demo credentials for demonstration only. No real authentication is used.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      DataStore.init();
+
+      // If already logged in, redirect
+      var user = DataStore.getCurrentUser();
+      if (user) {
+        window.location.href = user.role === 'admin' ? 'admin.html' : 'student.html';
+        return;
+      }
+
+      var form = document.getElementById('loginForm');
+      var errorBox = document.getElementById('loginError');
+      var idInput = document.getElementById('loginId');
+      var passInput = document.getElementById('loginPass');
+
+      // Auto-fill hint based on role toggle
+      document.querySelectorAll('input[name="role"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          if (this.value === 'admin') {
+            idInput.placeholder = 'Enter username (e.g. admin)';
+          } else {
+            idInput.placeholder = 'Enter your email';
+          }
+        });
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errorBox.classList.remove('show');
+        errorBox.textContent = '';
+
+        var identifier = idInput.value.trim();
+        var password = passInput.value;
+        var role = document.querySelector('input[name="role"]:checked').value;
+
+        if (!identifier || !password) {
+          showError('Please enter both email/username and password.');
+          return;
+        }
+
+        var user = DataStore.login(identifier, password);
+        if (!user) {
+          showError('Invalid credentials. Please check your email/username and password.');
+          return;
+        }
+        if (user.role !== role) {
+          DataStore.logout();
+          showError('The account "' + identifier + '" is not registered as ' + role + '. Please select the correct role.');
+          return;
+        }
+
+        // Redirect
+        window.location.href = user.role === 'admin' ? 'admin.html' : 'student.html';
+      });
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>
